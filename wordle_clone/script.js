@@ -1,5 +1,7 @@
 let attempts = 1;
-
+let index = -1;
+let guessed_word = "";
+let word_boxes = [];
 function isLetter(letter) {
   return /^[a-zA-Z]$/.test(letter);
 }
@@ -17,22 +19,31 @@ async function isWordValid(word) {
   return await resp.json();
 }
 
-// console.log(getTodaysWord());
+function updateWordsBox() {
+  word_boxes.forEach((box) => {
+    box.classList.remove("border-blue-900");
+  });
+
+  word_boxes = [];
+
+  document
+    .querySelector(`#attempt-${attempts}`)
+    .childNodes.forEach((node, idx) => {
+      if (idx % 2 !== 0) {
+        word_boxes.push(node);
+      }
+    });
+
+  word_boxes.forEach((box) => {
+    box.classList.add("border-blue-900");
+  });
+}
+
 async function main() {
+  updateWordsBox();
+
   try {
     const { word: todaysWord } = await getTodaysWord();
-
-    let index = -1;
-    let guessed_word = "";
-    let word_boxes = [];
-
-    document
-      .querySelector(`#attempt-${attempts}`)
-      .childNodes.forEach((node, idx) => {
-        if (idx % 2 !== 0) {
-          word_boxes.push(node);
-        }
-      });
 
     document.querySelector("body").addEventListener("keydown", async (e) => {
       if (attempts >= 6) return;
@@ -62,10 +73,14 @@ async function main() {
 
         // Highlight correct parts of the word
         todaysWord.split("").forEach((l, i) => {
+          console.log(l, guessed_word[i]);
           if (guessed_word[i] === l)
-            word_boxes[i].classList.add("bg-green-200");
+            word_boxes[i].classList.add("bg-green-500");
           else if (todaysWord.includes(guessed_word[i]))
-            word_boxes[i].classList.add("bg-yellow-200");
+            word_boxes[i].classList.add("bg-yellow-500");
+          else {
+            word_boxes[i].classList.add("bg-gray-700");
+          }
         });
 
         // Correct guess
@@ -74,10 +89,14 @@ async function main() {
         }
 
         attempts++;
+
+        updateWordsBox();
+        index = -1;
+        guessed_word = "";
       }
 
       if (!isLetter(e.key)) return;
-      const letter = e.key;
+      const letter = e.key.toLowerCase();
 
       if (index < 4) {
         word_boxes[++index].textContent = letter.toUpperCase();
