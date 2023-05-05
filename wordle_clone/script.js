@@ -2,8 +2,17 @@ let attempts = 1;
 let index = -1;
 let guessed_word = "";
 let word_boxes = [];
+
 function isLetter(letter) {
   return /^[a-zA-Z]$/.test(letter);
+}
+
+function hideLoader() {
+  document.querySelector("#loader").classList.add("hidden");
+}
+
+function showLoader() {
+  document.querySelector("#loader").classList.remove("hidden");
 }
 
 async function getTodaysWord() {
@@ -20,6 +29,8 @@ async function isWordValid(word) {
 }
 
 function updateWordsBox() {
+  if (attempts > 6) return;
+
   word_boxes.forEach((box) => {
     box.classList.remove("border-blue-900");
   });
@@ -43,10 +54,15 @@ async function main() {
   updateWordsBox();
 
   try {
+    showLoader();
     const { word: todaysWord } = await getTodaysWord();
+    hideLoader();
 
     document.querySelector("body").addEventListener("keydown", async (e) => {
-      if (attempts >= 6) return;
+      if (attempts > 6) {
+        alert("Refresh the page to try again");
+        return;
+      }
 
       if (e.key === "Backspace" && index >= 0) {
         guessed_word = guessed_word.slice(0, -1);
@@ -56,7 +72,10 @@ async function main() {
 
       if (e.key === "Enter" && guessed_word.length === 5) {
         // Post to API and check if word is valid
+        showLoader();
         const { validWord } = await isWordValid(guessed_word);
+        hideLoader();
+
         if (!validWord) {
           word_boxes.forEach((box) => {
             box.classList.add("border-red-900");
@@ -73,7 +92,6 @@ async function main() {
 
         // Highlight correct parts of the word
         todaysWord.split("").forEach((l, i) => {
-          console.log(l, guessed_word[i]);
           if (guessed_word[i] === l)
             word_boxes[i].classList.add("bg-green-500");
           else if (todaysWord.includes(guessed_word[i]))

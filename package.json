@@ -1,0 +1,10 @@
+{
+  "name": "frontend_masters_practice",
+  "version": "1.0.0",
+  "description": "Just me practicing frontendmasters stuff",
+  "author": "Keshav S",
+  "license": "MIT",
+  "dependencies": {
+    "live-server": "^1.2.2"
+  }
+}
